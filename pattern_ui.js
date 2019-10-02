@@ -64,10 +64,10 @@ function init_input(canvas) {
   document.addEventListener("keydown", key_down, false);
   document.addEventListener("keyup", key_up, false);
 
-  canvas.addEventListener("mousedown", mouseDown, false);
-  canvas.addEventListener("mouseup", mouseUp, false);
-  canvas.addEventListener("mouseout", mouseUp, false);
-  canvas.addEventListener("mousemove", mouseMove, false);
+  window.addEventListener("mousedown", mouseDown, false);
+  window.addEventListener("mouseup", mouseUp, false);
+  window.addEventListener("mouseout", mouseUp, false);
+  window.addEventListener("mousemove", mouseMove, false);
   window.addEventListener("wheel", event => INPUT.zoom+=(event.deltaY/Math.abs(event.deltaY)));
 
   return [INPUT, update_input];

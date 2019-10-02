@@ -146,9 +146,43 @@ function run_pattern(canvasId) {
   var [gl, programInfo, bufferInfo, blurProgramInfo, blurBufferInfo] = setup_gl(canvas);
   var [tex_main, tex_depth, tex_norm, tex_filter, fbo_filter] = create_textures(gl, {w:1024,h:1024}, {w:1024,h:1024});
 
+  images = ["img/1.jpg",
+            "img/1.png",
+            "img/2.jpg",
+            "img/3.jpg",
+            "img/4.jpg",
+            "img/5.jpg",
+            "img/img01.png",
+            "img/img04.png",
+            "img/img05.png",
+            "img/img07.png",
+            "img/showreel_1024.mp4",
+]
+  var random_image = images[Math.floor(Math.random() * images.length)];
+  norms = [
+            "img/ns/n (1).png",
+            "img/ns/n (2).png",
+            "img/ns/n (3).png",
+            "img/ns/n (4).png",
+            "img/ns/n (5).png",
+            "img/ns/n (6).png",
+            "img/ns/n (7).png",
+            "img/ns/n (8).png",
+            "img/ns/n (9).png",
+            "img/ns/n (10).png",
+            "img/ns/n (11).png",
+            "img/ns/n (12).png",
+            "img/ns/n (13).png",
+            "img/ns/n (14).png",
+            "img/ns/n (15).png",
+            "img/ns/n (16).png",
+            "img/ns/n (17).png",
+
+]
+  var random_n = norms[Math.floor(Math.random() * norms.length)];
   init_loader();
   // init_drop(gl, tex_main, canvas);
-  load_texture(gl, tex_main, "img/5.jpg");
+  load_texture(gl, tex_main, random_image);
   // load_texture(gl, tex_main, "img/showreel_1024.mp4");
   DEPTH_SOURCE = new Image();
   DEPTH_SOURCE.src = "img/01db.png";
@@ -157,7 +191,7 @@ function run_pattern(canvasId) {
   };
 
   NORM_SOURCE = new Image();
-  NORM_SOURCE.src = "img/04r.png";
+  NORM_SOURCE.src = random_n;
   NORM_SOURCE.onload = () => {
     twgl.setTextureFromElement(gl, tex_norm, NORM_SOURCE);
   };
@@ -177,8 +211,8 @@ function run_pattern(canvasId) {
   uniforms.u_eye = [0.0,0.0,0.0];
   var time = 0;
 
-  px = INPUT.mouseX;
-  py = INPUT.mouseY;
+  px = 0;
+  py = 0;
   vx = 0;
   vy = 0;
 
@@ -225,11 +259,11 @@ function run_pattern(canvasId) {
     mstep = 0.005;
     dx = INPUT.dmouseX;
     dy = INPUT.dmouseY;
-
-    // npx = INPUT.mouseX*mstep;
-    // npy = INPUT.mouseY*mstep;
-    npx = gb*0.01;
-    npy = gg*0.01;
+    // console.log(dx);
+    npx = px + INPUT.dmouseX*mstep;
+    npy = py + INPUT.dmouseY*mstep;
+    npx += gb*0.02;
+    npy += gg*0.02;
     vx = (npx-px)*0.1;
     vy = (npy-py)*0.1;
     px += vx;
