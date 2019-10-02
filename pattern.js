@@ -228,8 +228,8 @@ function run_pattern(canvasId) {
 
     // npx = INPUT.mouseX*mstep;
     // npy = INPUT.mouseY*mstep;
-    npx += gb*0.01;
-    npy += gg*0.01;
+    npx = gb*0.01;
+    npy = gg*0.01;
     vx = (npx-px)*0.1;
     vy = (npy-py)*0.1;
     px += vx;
