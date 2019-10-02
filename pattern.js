@@ -223,10 +223,10 @@ function run_pattern(canvasId) {
     dx = INPUT.dmouseX;
     dy = INPUT.dmouseY;
 
-    // npx = INPUT.mouseX;
-    // npy = INPUT.mouseY;
-    npx = INPUT.gb;
-    npy = INPUT.gg;
+    npx = INPUT.mouseX;
+    npy = INPUT.mouseY;
+    npx += gb;
+    npy += gg;
     vx = (npx-px)*0.1;
     vy = (npy-py)*0.1;
     px += vx;
