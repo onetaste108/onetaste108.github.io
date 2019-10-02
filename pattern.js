@@ -189,12 +189,16 @@ function run_pattern(canvasId) {
 
   var gn = new GyroNorm();
 
+  ga = 0;
+  gb = 0;
+  gg = 0;
+
   gn.init().then(function(){
     gn.start(function(data){
       // Process:
-      // data.do.alpha	( deviceorientation event alpha value )
-      // data.do.beta		( deviceorientation event beta value )
-      // data.do.gamma	( deviceorientation event gamma value )
+      ga = data.do.alpha	//( deviceorientation event alpha value )
+      gb = data.do.beta		//( deviceorientation event beta value )
+      gg = data.do.gamma	//( deviceorientation event gamma value )
       // data.do.absolute	( deviceorientation event absolute value )
 
       // data.dm.x		( devicemotion event acceleration x value )
@@ -219,8 +223,10 @@ function run_pattern(canvasId) {
     dx = INPUT.dmouseX;
     dy = INPUT.dmouseY;
 
-    npx = INPUT.mouseX;
-    npy = INPUT.mouseY;
+    // npx = INPUT.mouseX;
+    // npy = INPUT.mouseY;
+    npx = INPUT.gb;
+    npy = INPUT.gg;
     vx = (npx-px)*0.1;
     vy = (npy-py)*0.1;
     px += vx;
