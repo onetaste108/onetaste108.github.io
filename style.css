@@ -57,7 +57,12 @@
   font-weight: 900; }
 
 * {
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  pointer-events: none;}
+
+canvas {
+  pointer-events: all;
+}
 
 body {
   background: #222;
