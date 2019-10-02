@@ -148,8 +148,8 @@ function run_pattern(canvasId) {
 
   init_loader();
   // init_drop(gl, tex_main, canvas);
-  // load_texture(gl, tex_main, "img/1.jpg");
-  load_texture(gl, tex_main, "img/showreel_1024.mp4");
+  load_texture(gl, tex_main, "img/5.jpg");
+  // load_texture(gl, tex_main, "img/showreel_1024.mp4");
   DEPTH_SOURCE = new Image();
   DEPTH_SOURCE.src = "img/01db.png";
   DEPTH_SOURCE.onload = () => {
@@ -157,7 +157,7 @@ function run_pattern(canvasId) {
   };
 
   NORM_SOURCE = new Image();
-  NORM_SOURCE.src = "img/03r.png";
+  NORM_SOURCE.src = "img/04r.png";
   NORM_SOURCE.onload = () => {
     twgl.setTextureFromElement(gl, tex_norm, NORM_SOURCE);
   };
@@ -241,19 +241,6 @@ function run_pattern(canvasId) {
     }
     // m4.axisRotate(camera, [1,0,0], gx*mstep, camera);
 
-    var is_pause = false;
-    // function do_pause() {
-    //   is_pause = !is_pause;
-    //   if (!is_pause){
-    //     VIDEO_SOURCE.pause();
-    //
-    //   } else {
-    //
-    //     VIDEO_SOURCE.play();
-    //   }
-    // }
-
-    document.addEventListener("mousedown", do_pause, false);
 
     time += 1/60;
     if (IS_VIDEO) twgl.setTextureFromElement(gl, tex_main, VIDEO_SOURCE);
