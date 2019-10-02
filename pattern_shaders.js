@@ -21,6 +21,7 @@ uniform sampler2D u_tex;
 uniform sampler2D u_tex_depth;
 uniform sampler2D u_tex_norm;
 
+
 vec4 quat_from_axis_angle(vec3 axis, float angle)
 {
   vec4 qr;
@@ -47,7 +48,7 @@ vec3 project(vec3 p) {
   float phi = atan(np.x/np.z) / PI + 0.5;
   if (np.z < 0.0) phi = 1.0 - phi;
   float th = -asin(np.y) / PI + 0.5;
-  return texture2D(u_tex, vec2(phi,th)).rgb;
+  return texture2D(u_tex, vec2(phi,th)+u_offset*100.0).rgb;
 }
 
 vec2 ptouv(vec2 p) {
@@ -73,10 +74,16 @@ vec3 smooth3(sampler2D tex, vec2 p, vec2 uv, float a) {
 void main() {
   vec2 uv = ptouv(v_pos);
   vec3 color;
-  // vec3 ray = texture2D(u_tex_norm, uv).rgb;
-  vec3 ray = smooth3(u_tex_norm, (vec2(2.0)/u_res), uv, 0.5)-0.5;
-  ray = (u_cam*vec4(ray,0.0)).xyz;
-  color = project(ray);
+  vec3 r;
+  for (int x = 0; x < 4; x++) {
+    for (int y = 0; y < 4; y++) {
+      r = texture2D(u_tex_norm, uv+vec2(float(x),float(y))/vec2(1920.0*4.0, 1080.0*4.0)).rgb;
+      r = r * 2.0 - 1.0;
+      color += project(r);
+    }
+  }
+
+  color /= 4.0*4.0;
+
   gl_FragColor = vec4(color,1.0);
-  // gl_FragColor = vec4(1.0,1.0,0.0,1.0);
 }`;

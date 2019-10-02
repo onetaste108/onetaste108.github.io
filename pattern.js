@@ -191,7 +191,7 @@ function run_pattern(canvasId) {
   };
 
   NORM_SOURCE = new Image();
-  NORM_SOURCE.src = random_n;
+  NORM_SOURCE.src = "img/hires.png";
   NORM_SOURCE.onload = () => {
     twgl.setTextureFromElement(gl, tex_norm, NORM_SOURCE);
   };
@@ -216,8 +216,8 @@ function run_pattern(canvasId) {
   vx = 0;
   vy = 0;
 
-  canvas.width = Math.max(canvas.clientWidth, 512);
-  canvas.height = Math.max(canvas.clientHeight, 512);
+  canvas.width = Math.max(canvas.clientWidth, 1920);
+  canvas.height = Math.max(canvas.clientHeight, 1080);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
 
