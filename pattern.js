@@ -48,6 +48,7 @@ function run_pattern(canvasId) {
 
   function load_video(url) {
     VIDEO_SOURCE.src = url;
+    VIDEO_SOURCE.muted = true;
     VIDEO_SOURCE.play();
   }
 
@@ -147,7 +148,8 @@ function run_pattern(canvasId) {
 
   init_loader();
   // init_drop(gl, tex_main, canvas);
-  load_texture(gl, tex_main, "img/1.jpg");
+  // load_texture(gl, tex_main, "img/1.jpg");
+  load_texture(gl, tex_main, "img/showreel_1024.mp4");
   DEPTH_SOURCE = new Image();
   DEPTH_SOURCE.src = "img/01db.png";
   DEPTH_SOURCE.onload = () => {
@@ -155,7 +157,7 @@ function run_pattern(canvasId) {
   };
 
   NORM_SOURCE = new Image();
-  NORM_SOURCE.src = "img/05n.png";
+  NORM_SOURCE.src = "img/03r.png";
   NORM_SOURCE.onload = () => {
     twgl.setTextureFromElement(gl, tex_norm, NORM_SOURCE);
   };
