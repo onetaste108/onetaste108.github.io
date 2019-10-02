@@ -228,8 +228,8 @@ function run_pattern(canvasId) {
 
     npx = INPUT.mouseX*mstep;
     npy = INPUT.mouseY*mstep;
-    npx += gb;
-    npy += gg;
+    npx += gb*10.0;
+    npy += gg*10.0;
     vx = (npx-px)*0.1;
     vy = (npy-py)*0.1;
     px += vx;
@@ -241,6 +241,19 @@ function run_pattern(canvasId) {
     }
     // m4.axisRotate(camera, [1,0,0], gx*mstep, camera);
 
+    var is_pause = false;
+    // function do_pause() {
+    //   is_pause = !is_pause;
+    //   if (!is_pause){
+    //     VIDEO_SOURCE.pause();
+    //
+    //   } else {
+    //
+    //     VIDEO_SOURCE.play();
+    //   }
+    // }
+
+    document.addEventListener("mousedown", do_pause, false);
 
     time += 1/60;
     if (IS_VIDEO) twgl.setTextureFromElement(gl, tex_main, VIDEO_SOURCE);
