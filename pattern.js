@@ -182,8 +182,8 @@ function run_pattern(canvasId) {
   vx = 0;
   vy = 0;
 
-  canvas.width = canvas.clientWidth
-  canvas.height = canvas.clientHeight
+  canvas.width = Math.max(canvas.clientWidth, 512);
+  canvas.height = Math.max(canvas.clientHeight, 512);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
 
@@ -226,8 +226,8 @@ function run_pattern(canvasId) {
     dx = INPUT.dmouseX;
     dy = INPUT.dmouseY;
 
-    npx = INPUT.mouseX;
-    npy = INPUT.mouseY;
+    npx = INPUT.mouseX*mstep;
+    npy = INPUT.mouseY*mstep;
     npx += gb;
     npy += gg;
     vx = (npx-px)*0.1;
@@ -237,7 +237,7 @@ function run_pattern(canvasId) {
 
     rot_len = Math.sqrt(vx*vx+vy*vy)
     if (rot_len > 0){
-      m4.axisRotate(camera, [-vy/rot_len,vx/rot_len,0], mstep*rot_len, camera);
+      m4.axisRotate(camera, [-vy/rot_len,vx/rot_len,0], rot_len, camera);
     }
     // m4.axisRotate(camera, [1,0,0], gx*mstep, camera);
 
