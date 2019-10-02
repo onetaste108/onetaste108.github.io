@@ -1,0 +1,205 @@
+.logo {
+  position: relative;
+  display: block;
+  width: 165px;
+}
+.logo svg {
+    position: relative;
+    display: block;
+    width: 100%;
+    transition: all .3s ease;
+}
+.nav {
+  position: relative;
+  display: flex;
+}
+.nav__item {
+    position: relative;
+    display: block;
+    margin-right: 14px;
+    transition: all .3s ease;
+}
+.lang {
+  position: relative;
+  display: block;
+  cursor: pointer;
+  font-weight: bold;
+}
+.sound {
+  position: absolute;
+  display: block;
+  cursor: pointer;
+  height: 24px;
+  width: 24px;
+  z-index: 1;
+  bottom: 24px;
+  right: 40px;
+}
+.sound svg {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+@font-face {
+  font-family: 'Aeroport';
+  src: url(https://s3.amazonaws.com/radugadesign.com/Aeroport-regular.ttf) format("truetype");
+  font-weight: 500; }
+
+@font-face {
+  font-family: 'Aeroport';
+  src: url(https://s3.amazonaws.com/radugadesign.com/Aeroport-medium.ttf) format("truetype");
+  font-weight: 700; }
+
+@font-face {
+  font-family: 'Aeroport';
+  src: url(https://s3.amazonaws.com/radugadesign.com/Aeroport-bold.ttf) format("truetype");
+  font-weight: 900; }
+
+* {
+  box-sizing: border-box; }
+
+body {
+  background: #222;
+  font-size: 18px;
+  font-family: 'Aeroport', Arial, sans-serif; }
+
+a {
+  text-decoration: none;
+  font-weight: bold; }
+
+.page {
+  position: relative;
+  display: block; }
+
+.page__padding {
+    position: relative;
+    display: block;
+    padding: 0 40px; }
+
+.plus {
+  position: relative;
+  display: block;
+  height: 32px;
+  width: 32px; }
+
+.plus:before, .plus:after {
+    content: '';
+    position: absolute;
+    display: block;
+    height: 2px;
+    width: 100%;
+    top: 50%;
+    left: 0;
+    background: #fff; }
+
+.plus:after {
+    transform: rotate(90deg); }
+
+.app_theme-light .logo svg {
+  fill: #000; }
+
+.app_theme-light .nav__item, .app_theme-light .lang {
+  color: #000; }
+
+.app_theme-dark .logo svg {
+  fill: #fff; }
+
+.app_theme-dark .nav__item, .app_theme-dark .lang {
+  color: #fff; }
+
+.header {
+  position: relative;
+  display: flex;
+  padding: 32px 40px 0; }
+
+.header__left {
+    position: relative;
+    display: block;
+    width: 25%;
+    min-width: 200px;
+}
+
+.header__right {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    width: 75%; }
+
+.page_index {
+  color: #fff;
+  background-size: cover;
+  position: absolute;
+  display: block;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.slides {
+  position: absolute;
+  display: block;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.slides .slide {
+    position: absolute;
+    display: block;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 0 40px;
+}
+.slides .slide__text {
+      position: relative;
+      display: block;
+      padding-left: 25%;
+}
+.slides .slide__bg{
+  position:absolute;
+  display: block;
+  top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+.slides .slide__bg canvas{
+  width:100%;
+  height:100%;
+  background:#000;
+}
+.tagline {
+  margin-top: 50%;
+  font-size: 70px;
+  line-height: 70px;
+  font-weight: bold;
+  max-width: 400px;
+}
+.showreel {
+  position: relative;
+  display: flex;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 24px;
+}
+.showreel__label {
+    margin-left: 16px;
+}
+.page_about {
+  position: absolute;
+  display: block;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: #fff;
+}
+
+@media (max-width: 1200px){
+  .tagline{
+    font-size:56px;
+  }
+}
