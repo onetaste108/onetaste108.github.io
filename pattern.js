@@ -199,7 +199,7 @@ function run_pattern(canvasId) {
       ga = data.do.alpha	//( deviceorientation event alpha value )
       gb = data.do.beta		//( deviceorientation event beta value )
       gg = data.do.gamma	//( deviceorientation event gamma value )
-      alert(ga)
+      // alert(ga)
       // data.do.absolute	( deviceorientation event absolute value )
 
       // data.dm.x		( devicemotion event acceleration x value )
