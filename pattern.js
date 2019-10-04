@@ -191,7 +191,7 @@ function run_pattern(canvasId) {
   };
 
   NORM_SOURCE = new Image();
-  NORM_SOURCE.src = "img/hires.png";
+  NORM_SOURCE.src = "img/normal.png";
   NORM_SOURCE.onload = () => {
     twgl.setTextureFromElement(gl, tex_norm, NORM_SOURCE);
   };
@@ -229,30 +229,30 @@ function run_pattern(canvasId) {
   gb = 0;
   gg = 0;
 
-  gn.init().then(function(){
-    gn.start(function(data){
-      // Process:
-      ga = data.do.alpha	//( deviceorientation event alpha value )
-      gb = data.do.beta		//( deviceorientation event beta value )
-      gg = data.do.gamma	//( deviceorientation event gamma value )
-      // alert(ga)
-      // data.do.absolute	( deviceorientation event absolute value )
-
-      // data.dm.x		( devicemotion event acceleration x value )
-      // data.dm.y		( devicemotion event acceleration y value )
-      // data.dm.z		( devicemotion event acceleration z value )
-
-      // data.dm.gx		( devicemotion event accelerationIncludingGravity x value )
-      // data.dm.gy		( devicemotion event accelerationIncludingGravity y value )
-      // data.dm.gz		( devicemotion event accelerationIncludingGravity z value )
-
-      // data.dm.alpha	( devicemotion event rotationRate alpha value )
-      // data.dm.beta		( devicemotion event rotationRate beta value )
-      // data.dm.gamma	( devicemotion event rotationRate gamma value )
-    });
-  }).catch(function(e){
-    alert("ERROR");
-  });
+  // gn.init().then(function(){
+  //   gn.start(function(data){
+  //     // Process:
+  //     ga = data.do.alpha	//( deviceorientation event alpha value )
+  //     gb = data.do.beta		//( deviceorientation event beta value )
+  //     gg = data.do.gamma	//( deviceorientation event gamma value )
+  //     // alert(ga)
+  //     // data.do.absolute	( deviceorientation event absolute value )
+  //
+  //     // data.dm.x		( devicemotion event acceleration x value )
+  //     // data.dm.y		( devicemotion event acceleration y value )
+  //     // data.dm.z		( devicemotion event acceleration z value )
+  //
+  //     // data.dm.gx		( devicemotion event accelerationIncludingGravity x value )
+  //     // data.dm.gy		( devicemotion event accelerationIncludingGravity y value )
+  //     // data.dm.gz		( devicemotion event accelerationIncludingGravity z value )
+  //
+  //     // data.dm.alpha	( devicemotion event rotationRate alpha value )
+  //     // data.dm.beta		( devicemotion event rotationRate beta value )
+  //     // data.dm.gamma	( devicemotion event rotationRate gamma value )
+  //   });
+  // }).catch(function(e){
+  //   alert("ERROR");
+  // });
 
   function render() {
     update_input();
@@ -289,16 +289,16 @@ function run_pattern(canvasId) {
 
     // DRAW
     uniforms.u_time = time;
-    uniforms.u_cam = camera;
+    // uniforms.u_cam = camera;
     // if (INPUT.drag) uniforms.u_eye[0] += INPUT.dmouseX*0.005;
     // if (INPUT.drag) uniforms.u_eye[1] += INPUT.dmouseY*0.005;
     // uniforms.u_eye[2] = INPUT.zoom;
     //
-    uniforms.u_tex = tex_main;
-    uniforms.u_tex_depth = tex_depth;
-    uniforms.u_tex_norm = tex_norm;
-    uniforms.u_offset = [INPUT.mouseX/canvas.width, INPUT.mouseY/canvas.height];
-    uniforms.u_offset = [px/canvas.width, py/canvas.height];
+    uniforms.u_tex0 = tex_main;
+    uniforms.u_tex1 = tex_norm;
+    // uniforms.u_tex_norm = tex_norm;
+    // uniforms.u_mouse = [INPUT.mouseX/canvas.width, INPUT.mouseY/canvas.height];
+    uniforms.u_mouse = [px/canvas.width, py/canvas.height];
     // console.log([INPUT.mouseX, INPUT.mouseY]);
     // uniforms.u_blur_tex = blur_tex;
     // uniforms.u_blur_tex = blur_tex;
