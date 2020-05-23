@@ -33,16 +33,45 @@ var createVideoSource = (wfx, url) => {
     return videoSource;
 }
 
+
+var createCameraSource = (wfx) => {
+    let playing = false;
+    var videoElement = document.createElement("video");
+    var videoSource = wfx.Source(videoElement);
+    // document.body.appendChild(videoElement);
+    videoElement.autoPlay = true;
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+            videoElement.addEventListener('playing', () => {
+                videoSource.setReady(true);
+                videoSource.setWidth(videoElement.videoWidth);
+                videoSource.setHeight(videoElement.videoHeight);
+            });
+            videoElement.srcObject = stream;
+            videoElement.onloadedmetadata = () => {
+                videoElement.play();
+            };
+        })
+        .catch(function(error) {
+          console.error(error); // eslint-disable-line
+        });
+    };
+    return videoSource;
+}
+
+
+
 var mainCanvas = createMainCanvas();
 var gl = mainCanvas.getContext("webgl");
 var wfx = Webfx(mainCanvas);
 var config = {
     window: 5,
-    iters: 1,
-    fact: 1/3,
-    levels: 1,
+    iters: 5,
+    fact: 1 / 2,
+    levels: 4,
     blur: 2,
-    flowscale: 1/4
+    flowscale: 1 / 4
 };
 
 var sh_vheader = `
@@ -100,14 +129,14 @@ var blitProg = wfx.Program(
         if (u_mode == STRECH) {
             v_texCoord = pos * 0.5 + 0.5;
         } else if (u_mode == FILL) {
-            float ratio = (u_res.x / u_res.y) * (u_tex0res.x / u_tex0res.y);
+            float ratio = (u_res.x / u_res.y) / (u_tex0res.x / u_tex0res.y);
             if (ratio < 1.0) {
                 v_texCoord = vec2(pos.x*ratio, pos.y) * 0.5 + 0.5;
             } else {
                 v_texCoord = vec2(pos.x, pos.y/ratio) * 0.5 + 0.5;
             }
         } else if (u_mode == FIT) {
-            float ratio = (u_res.x / u_res.y) * (u_tex0res.x / u_tex0res.y);
+            float ratio = (u_res.x / u_res.y) / (u_tex0res.x / u_tex0res.y);
             if (ratio < 1.0) {
                 v_texCoord = vec2(pos.x, pos.y/ratio) * 0.5 + 0.5;
             } else {
@@ -318,15 +347,15 @@ var flowProg = wfx.Program(
                 for (int j = -W2; j < W2+1; j++) {
                     pos1.y += float(j);
                     pos2.y += float(j);
-                    vec2 d = unpack2(texture2D(u_D1, pos1/u_res))*2.0-1.0;
-                    float dI   = unpack(texture2D(u_I1, pos1/u_res).xy) -
-                                    unpack(texture2D(u_I2, pos2/u_res).xy);
+                    vec2 d = (unpack2(texture2D(u_D1, pos1/u_res))*2.0-1.0);
+                    float dI   = unpack(texture2D(u_I2, pos2/u_res).xy) -
+                                    unpack(texture2D(u_I1, pos1/u_res).xy);
                     if (k==0) {
                         GXX += d.x*d.x;
                         GXY += d.x*d.y;
                         GYY += d.y*d.y;
                     }
-                    v += d * dI;
+                    v -= d * dI;
                 }
             }
             float det_inv = 1.0 / (GXX * GYY - GXY * GXY);
@@ -395,6 +424,45 @@ var displayFlow = wfx.Program(
     `
 )
 
+var warpProg = wfx.Program(
+    sh_vbasic,
+    sh_vheader +
+    sh_pack +
+    sh_pack2 +
+    `
+    uniform sampler2D u_tex0;
+    uniform sampler2D u_tex1;
+    uniform sampler2D u_tex2;
+    varying vec2 v_texCoord;
+    uniform vec2 u_res;
+    uniform float u_scale;
+    void main() {
+        float block = 8.0;
+        vec2 pt = floor(v_texCoord * (u_res/block)) / (u_res/block);
+        // vec2 pt = v_texCoord;
+        vec2 flow = (unpack2(texture2D(u_tex1, pt))-0.5)*u_scale;
+        flow = (floor(flow*u_res+0.5))/u_res;
+        // flow *= 0.0;
+        flow = v_texCoord-flow;
+
+        vec2 pix = 1.0 / u_res;
+        vec2 dx =  (unpack2(texture2D(u_tex1, pt + vec2(pix.x, 0.0)))-0.5) * 
+                    (unpack2(texture2D(u_tex1, pt - vec2(pix.x, 0.0)))-0.5);
+        vec2 dy =  (unpack2(texture2D(u_tex1, pt + vec2(0.0, pix.y)))-0.5) * 
+                    (unpack2(texture2D(u_tex1, pt - vec2(0.0, pix.y)))-0.5);
+
+        vec4 color = texture2D(u_tex0, clamp(flow, 0.0, 1.0));
+        float d = dx.x * dy.y;
+        if (d < 0.0) color = texture2D(u_tex2, v_texCoord);
+        gl_FragColor = color;
+    }
+    `,
+    {u_scale: 1}
+);
+var warp = (dfbo, tex, vid, scale) => {
+    warpProg.render(dfbo, [dfbo, tex, vid], {u_scale: scale ? scale : 1});
+}
+
 
 var FlowPyramid = (f, l, b) => {
     var self = {};
@@ -441,290 +509,39 @@ var FlowPyramid = (f, l, b) => {
 }
 
 
-// var videoSource = createVideoSource(wfx, "ball.mp4");
-var videoSource = createVideoSource(wfx, "frank.mp4");
-
+// var videoSource = createVideoSource(wfx, "frank.mp4");
+var videoSource = createCameraSource(wfx);
+var video = videoSource.element();
 var vid = wfx.Tex(); vid.setSource(videoSource);
 var flowPre = wfx.DFBO("screen", config.screenscale);
+var vid2 = wfx.FBO("screen", 1);
 var flow = FlowPyramid(config.fact, config.levels, config.blur);
 var flowPost = wfx.DFBO("screen", 1);
+var warpFbo = wfx.DFBO("screen", 1);
+
+var is_on = false;
+
+mainCanvas.addEventListener("click", () => { is_on = !is_on });
+// videoSource.element().addEventListener("play", () => { blit(warpFbo, vid, 1); console.log("Reset") });
+
 
 var render = () => {
+
     vid.update();
-    bwProg.render(flowPre, [vid]);
+    blit(flowPre, vid, 1);
+    blit(vid2, vid, 1);
+    bwProg.render(flowPre, [flowPre]);
     flow.update(flowPre);
     flow.compute();
-    // blit(wfx.screen, flow.levels[0].i2);
-    // blit(wfx.screen, flow.levels[0].deriv);
-    displayFlow.render(flowPost, [flow.flow, wfx.empty], { u_scale: 1 });
-    // blit(flowPost, flow.levels[0].flow, null, true);
-    blit(wfx.screen, flowPost, null, true);
+    blit(flowPost, flow.levels[0].flow);
+    blurFilter(flowPost, 2);
+    if (!is_on) {
+        blit(warpFbo, vid, 1);
+    } else {
+        warp(warpFbo, flowPost, vid2, 1);
+    }
+    blit(wfx.screen, warpFbo, null, true);
 
-    setTimeout(render, 1000 / 15);
+    setTimeout(render, 1000 / 30);
 }
 render();
-
-
-_______s_ = () => {
-
-    var initComputeShader = () => {
-        var width = 256;
-        var height = 256;
-        // var canvas = document.createElement("canvas");
-        var canvas = document.getElementById("computeCanvas");
-        canvas.width = width;
-        canvas.height = height;
-        var gl = canvas.getContext("webgl");
-        var programInfo = twgl.createProgramInfo(gl, [computeVS, computeFS]);
-        var derivProgramInfo = twgl.createProgramInfo(gl, [computeVS, derivFS]);
-        var plainProg = twgl.createProgramInfo(gl, [computeVS, plainFS]);
-        var plainUVProg = twgl.createProgramInfo(gl, [computeVS, plainUVFS]);
-        var blurProg = twgl.createProgramInfo(gl, [computeVS, blur5FS]);
-        var warpProg = twgl.createProgramInfo(gl, [computeVS, warpFS]);
-        var medianProg = twgl.createProgramInfo(gl, [computeVS, medianFS]);
-        const arrays = {
-            a_pos: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
-        };
-        const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
-
-
-        gl.useProgram(programInfo.program);
-        twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
-
-        var warpFbo1 = twgl.createFramebufferInfo(gl, null, width * 4, height * 4);
-        var warpFbo2 = twgl.createFramebufferInfo(gl, null, width * 4, height * 4);
-
-        var warp = (uv, scale) => {
-            gl.useProgram(warpProg.program);
-            twgl.setUniforms(warpProg, {
-                u_tex: warpFbo1.attachments[0],
-                u_UV: uv,
-                u_scale: scale,
-                u_res: [warpFbo1.width, warpFbo1.height],
-            })
-            twgl.bindFramebufferInfo(gl, warpFbo2);
-            twgl.drawBufferInfo(gl, bufferInfo);
-            var tmp = warpFbo1;
-            warpFbo1 = warpFbo2;
-            warpFbo2 = tmp;
-        }
-        var warpSet = (tex) => {
-            gl.useProgram(plainProg.program);
-            twgl.setUniforms(plainProg, {
-                u_tex: tex,
-                u_flip: false
-            })
-            twgl.bindFramebufferInfo(gl, warpFbo2);
-            twgl.drawBufferInfo(gl, bufferInfo);
-            var tmp = warpFbo1;
-            warpFbo1 = warpFbo2;
-            warpFbo2 = tmp;
-        }
-
-        var medianFbo1 = twgl.createFramebufferInfo(gl, null, width, height);
-        var medianFbo2 = twgl.createFramebufferInfo(gl, null, width, height);
-
-        var median = () => {
-            gl.useProgram(medianProg.program);
-            twgl.setUniforms(medianProg, {
-                u_tex: medianFbo1.attachments[0],
-                u_res: [medianFbo1.width, medianFbo1.height],
-            })
-            twgl.bindFramebufferInfo(gl, medianFbo2);
-            twgl.drawBufferInfo(gl, bufferInfo);
-            var tmp = medianFbo1;
-            medianFbo1 = medianFbo2;
-            medianFbo2 = tmp;
-        };
-
-        var blit = (tex, target) => {
-            gl.useProgram(plainProg.program);
-            twgl.setUniforms(plainProg, {
-                u_tex: tex,
-                u_flip: false
-            })
-            twgl.bindFramebufferInfo(gl, target);
-            twgl.drawBufferInfo(gl, bufferInfo);
-        };
-
-
-        var previousFrame = twgl.createTexture(gl, null, { minMag: gl.LINEAR });
-        var currentFrame = twgl.createTexture(gl, null, { minMag: gl.LINEAR });
-
-        var grab = frameGrabber(video);
-
-        var buildPyramid = (width, height, levels, scale) => {
-            var frames = [];
-            var derivs = [];
-            var uvs = [];
-            var w = width;
-            var h = height;
-            for (var i = 0; i < levels; i++) {
-                var frame1 = twgl.createFramebufferInfo(gl, null, w, h);
-                var frame1_ = twgl.createFramebufferInfo(gl, null, w, h);
-                var frame2 = twgl.createFramebufferInfo(gl, null, w, h);
-                var frame2_ = twgl.createFramebufferInfo(gl, null, w, h);
-                var deriv = twgl.createFramebufferInfo(gl, null, w, h);
-                var uv = twgl.createFramebufferInfo(gl, null, w, h);
-                frames.push([[frame1, frame1_], [frame2, frame2_]]);
-                derivs.push(deriv);
-                uvs.push(uv);
-                w = Math.floor(w / scale);
-                h = Math.floor(h / scale);
-            }
-            return { frames: frames, derivs: derivs, uvs: uvs, levels: levels, scale: scale }
-        }
-
-        var pyr = buildPyramid(256, 256, 2, 4);
-
-        var blur = (fbo1, fbo2) => {
-            gl.useProgram(blurProg.program);
-
-            twgl.setUniforms(blurProg, {
-                u_tex: fbo1.attachments[0],
-                u_res: [fbo1.width, fbo1.height],
-                u_dir: [1, 0]
-            });
-            twgl.bindFramebufferInfo(gl, fbo2);
-            twgl.drawBufferInfo(gl, bufferInfo);
-
-            twgl.setUniforms(blurProg, {
-                u_tex: fbo2.attachments[0],
-                u_res: [fbo1.width, fbo1.height],
-                u_dir: [0, 1]
-            });
-            twgl.bindFramebufferInfo(gl, fbo1);
-            twgl.drawBufferInfo(gl, bufferInfo);
-        }
-
-        var propagateFrames = () => {
-            for (var j = 0; j < 2; j++) {
-                for (var i = 0; i < pyr.levels; i++) {
-                    gl.useProgram(plainProg.program);
-                    if (i == 0) {
-                        if (j == 0) {
-                            twgl.setUniforms(plainProg, { u_tex: previousFrame, u_flip: false });
-                        } else {
-                            twgl.setUniforms(plainProg, { u_tex: currentFrame, u_flip: false });
-                        }
-                    } else {
-                        twgl.setUniforms(plainProg, {
-                            u_tex: pyr.frames[i - 1][j][0].attachments[0],
-                            u_flip: false
-                        });
-                    }
-                    twgl.bindFramebufferInfo(gl, pyr.frames[i][j][0]);
-                    twgl.drawBufferInfo(gl, bufferInfo);
-                    for (var k = 0; k < 10; k++) {
-                        blur(pyr.frames[i][j][0], pyr.frames[i][j][1]);
-                    }
-                }
-            }
-        }
-
-        var propagateDerivs = () => {
-            gl.useProgram(derivProgramInfo.program);
-            for (var i = 0; i < pyr.levels; i++) {
-                twgl.setUniforms(derivProgramInfo, {
-                    u_tex: pyr.frames[i][0][0].attachments[0],
-                    u_res: [pyr.frames[i][0][0].width, pyr.frames[i][0][0].height]
-                })
-                twgl.bindFramebufferInfo(gl, pyr.derivs[i]);
-                twgl.drawBufferInfo(gl, bufferInfo);
-            }
-        }
-
-        var propagateUVs = () => {
-            gl.useProgram(programInfo.program);
-            for (var i = pyr.levels - 1; i >= 0; i--) {
-                var isFirst = i == pyr.levels - 1;
-                if (!isFirst) {
-                    twgl.setUniforms(programInfo, { u_UV: pyr.uvs[i + 1].attachments[0] });
-                } else {
-                    twgl.setUniforms(programInfo, { u_UV: null });
-                }
-                twgl.setUniforms(programInfo, {
-                    u_I1: pyr.frames[i][0][0].attachments[0],
-                    u_I2: pyr.frames[i][1][0].attachments[0],
-                    u_D1: pyr.derivs[i].attachments[0],
-                    u_res: [pyr.frames[i][0][0].width, pyr.frames[i][0][0].height],
-                    u_isFirst: isFirst,
-                    u_level: i,
-                    u_pyrScale: pyr.scale
-                })
-                twgl.bindFramebufferInfo(gl, pyr.uvs[i]);
-                twgl.drawBufferInfo(gl, bufferInfo);
-            }
-        }
-
-
-        var updateFrames = () => {
-            var tmp = previousFrame;
-            previousFrame = currentFrame;
-            currentFrame = tmp;
-            twgl.setTextureFromElement(gl, currentFrame, grab());
-        }
-
-        updateFrames();
-        canvas.addEventListener("click", () => { warpSet(currentFrame); console.log("Reset") });
-        video.addEventListener("play", () => { warpSet(currentFrame); console.log("Reset") });
-        warpSet(currentFrame);
-
-        var show = (tex) => {
-            gl.useProgram(plainProg.program);
-            twgl.setUniforms(plainProg, {
-                u_tex: tex,
-                u_flip: true
-            })
-            twgl.bindFramebufferInfo(gl);
-            twgl.drawBufferInfo(gl, bufferInfo);
-        }
-
-        var showuv = (tex) => {
-            gl.useProgram(plainUVProg.program);
-            twgl.setUniforms(plainUVProg, {
-                u_tex: tex,
-                u_flip: true
-            })
-            twgl.bindFramebufferInfo(gl);
-            twgl.drawBufferInfo(gl, bufferInfo);
-        }
-
-        var render = () => {
-            updateFrames();
-
-            propagateFrames();
-            propagateDerivs();
-            propagateUVs();
-
-            // blit(currentFrame, medianFbo1);
-            blit(pyr.uvs[0].attachments[0], medianFbo1);
-            for (var i = 0; i < 0; i++) {
-                median();
-            }
-
-
-            warp(medianFbo1.attachments[0], 4);
-
-            show(pyr.frames[0][0][0].attachments[0]);
-            show(pyr.derivs[0].attachments[0]);
-            // showuv(pyr.uvs[0].attachments[0]);
-            showuv(medianFbo1.attachments[0]);
-            // show(medianFbo1.attachments[0]);
-            displayCtx.drawImage(canvas, 0, 0, displayCanvas.width, displayCanvas.height);
-            show(warpFbo1.attachments[0])
-
-
-
-            requestAnimationFrame(render);
-        }
-        render();
-    }
-
-
-
-
-
-    initComputeShader();
-
-}

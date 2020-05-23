@@ -61,12 +61,12 @@ var Webfx = (canvas) => {
 
 
     var Tex = () => {
-        var _texture = twgl.createTexture(gl, { width: 1, height: 1, minMag: gl.LINEAR });
-        var _width = 1;
-        var _height = 1;
+        var _texture = twgl.createTexture(gl, { width: 2, height: 2, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE });
+        var _width = 2;
+        var _height = 2;
         var _source = null;
         var _update = () => {
-            twgl.setTextureFromElement(gl, _texture, _source.element());
+            twgl.setTextureFromElement(gl, _texture, _source.element(), {minMag: gl.LINEAR, auto: false});
             _width = _source.width();
             _height = _source.height();
         }
@@ -163,6 +163,7 @@ var Webfx = (canvas) => {
     };
 
     return {
+        gl: gl,
         screen: screen,
         empty: empty,
         bindScreenSize: bindScreenSize,
