@@ -435,17 +435,18 @@ var warpProg = wfx.Program(
     uniform sampler2D u_tex2;
     varying vec2 v_texCoord;
     uniform vec2 u_res;
+    uniform vec2 u_tex1res;
     uniform float u_scale;
     void main() {
-        float block = 8.0;
-        vec2 pt = floor(v_texCoord * (u_res/block)) / (u_res/block);
+        float block = 16.0;
+        vec2 pt = (floor(v_texCoord * (u_tex1res/block))+0.5) / (u_tex1res/block);
         // vec2 pt = v_texCoord;
         vec2 flow = (unpack2(texture2D(u_tex1, pt))-0.5)*u_scale;
         flow = (floor(flow*u_res+0.5))/u_res;
         // flow *= 0.0;
         flow = v_texCoord-flow;
 
-        vec2 pix = 1.0 / u_res;
+        vec2 pix = 1.0 / u_tex1res;
         vec2 dx =  (unpack2(texture2D(u_tex1, pt + vec2(pix.x, 0.0)))-0.5) * 
                     (unpack2(texture2D(u_tex1, pt - vec2(pix.x, 0.0)))-0.5);
         vec2 dy =  (unpack2(texture2D(u_tex1, pt + vec2(0.0, pix.y)))-0.5) * 
